@@ -1,26 +1,27 @@
-FROM lopin/kernel-deb-builder
+FROM lopin/kernel-deb-builder as builder
 
-RUN mkdir -p /build/linux /build/patches && cd /build/linux && \
+RUN mkdir -p /SRC/linux /build/linux && cd /SRC/linux && \
 	apt-get update && apt-get --download-only source linux && \
 	apt-get clean && rm -rf /var/lib/apt/lists/*
 
-ARG DEBEMAIL='Anonymous Anonymous <anonymous@domain.org>'
-#ARG DEBCHANGE_OPTIONS="--nmu"
-ARG DEBCHANGE_OPTIONS="-l +custom"
-ARG ARCH=amd64
-ARG FEATURESET=none
-ARG FLAVOUR=amd64
-ARG MAKEFLAGS
-ARG DEBIAN_KERNEL_DISABLE_DEBUG=yes
+ENV \
+	DEBEMAIL='Anonymous Anonymous <anonymous@anonymous.org>' \
+	DEBCHANGE_OPTIONS='--nmu' \
+	ARCH=amd64 \
+	FEATURESET=none \
+	FLAVOUR=amd64 \
+	DEBIAN_KERNEL_DISABLE_DEBUG=yes
 
-VOLUME /build
+COPY patches /SRC/patches
+COPY scripts /SRC
 
-COPY patches /build/patches
-COPY scripts /build
+VOLUME /build/linux
 
-RUN chmod +x /build/build.sh && sleep 1 && \
-	env DEBEMAIL="$DEBEMAIL" DEBCHANGE_OPTIONS="$DEBCHANGE_OPTIONS" \
-	ARCH="$ARCH" FEATURESET="$FEATURESET" FLAVOUR="$FLAVOUR" \
-	MAKEFLAGS="$MAKEFLAGS" \
-	/build/build.sh
+RUN /SRC/build.sh
+
+
+FROM alpine:latest
+RUN mkdir /SRC /OUT
+COPY --from=builder /SRC/* /SRC/
+COPY --from=builder /build/* /OUT/
 
