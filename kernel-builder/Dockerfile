@@ -5,8 +5,8 @@ RUN mkdir -p /SRC/linux /build/linux && cd /SRC/linux && \
 	apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV \
-	DEBEMAIL='Anonymous Anonymous <anonymous@anonymous.org>' \
-	DEBCHANGE_OPTIONS='--nmu' \
+	DEBEMAIL='Martin Lopatář <lop.spm@seznam.cz>' \
+	DEBCHANGE_OPTIONS='-l +smb3enc' \
 	ARCH=amd64 \
 	FEATURESET=none \
 	FLAVOUR=amd64 \
